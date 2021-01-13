@@ -1,0 +1,17 @@
+Package: openreviewer
+Type: Package
+Title: Query openreview API from R
+Description: An interface to query the openreview platform API from R.
+Version: 0.0.1
+Authors@R: person("Mahmoud", "Ahmed",
+                  email = "mahshaaban@gnu.ac.kr",
+                  role = c("aut", "cre"))
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    httr,
+    jsonlite
+Suggests: 
+    testthat
+RoxygenNote: 7.1.1
