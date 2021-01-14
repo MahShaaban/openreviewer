@@ -43,7 +43,3 @@ An S3 object of class openreview.
 \description{
 Request invitations
 }
-\examples{
-request_invitations(id = 'mahshaaban@gnu.ac.kr')
-
-}

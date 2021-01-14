@@ -31,6 +31,6 @@ An S3 object of class openreview.
 Request groups
 }
 \examples{
-request_groups(id = 'mahshaaban@gnu.ac.kr')
+request_groups(id = 'bioconductor.org')
 
 }

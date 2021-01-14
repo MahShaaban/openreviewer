@@ -53,6 +53,7 @@ An S3 object of class openreview.
 Request notes
 }
 \examples{
-request_notes(id = 'mahshaaban@gnu.ac.kr')
+# notes on this submission https://openreview.net/forum?id=B1gabhRcYX
+request_notes(id = 'B1gabhRcYX')
 
 }

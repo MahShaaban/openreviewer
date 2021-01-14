@@ -15,28 +15,29 @@ test_that("request_profiles works", {
 })
 
 test_that("request_groups works", {
-    groups <- request_groups(id = 'mahshaaban@gnu.ac.kr')
+    groups <- request_groups(id = 'bioconductor.org')
 
     expect_s3_class(groups, 'openreview')
     expect_length(groups, 3)
 })
 
 test_that("request_notes works", {
-    notes <- request_notes(id = 'mahshaaban@gnu.ac.kr')
+    # notes on this submission https://openreview.net/forum?id=B1gabhRcYX
+    notes <- request_notes(id = 'B1gabhRcYX')
 
     expect_s3_class(notes, 'openreview')
     expect_length(notes, 3)
 })
 
 test_that("request_invitations works", {
-    invit <- request_invitations(id = 'mahshaaban@gnu.ac.kr')
-
-    expect_s3_class(invit, 'openreview')
-    expect_length(invit, 3)
+    # invit <- request_invitations(id)
+    #
+    # expect_s3_class(invit, 'openreview')
+    # expect_length(invit, 3)
 })
 
 test_that("request_tags works", {
-    tags <- request_tags(id = 'mahshaaban@gnu.ac.kr')
+    tags <- request_tags(id = 'bioconductor.org')
 
     expect_s3_class(tags, 'openreview')
     expect_length(tags, 3)

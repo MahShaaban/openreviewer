@@ -62,7 +62,7 @@ request_profiles <- function(id, email, first, middle, last, group) {
 #' }
 #'
 #' @examples
-#' request_groups(id = 'mahshaaban@gnu.ac.kr')
+#' request_groups(id = 'bioconductor.org')
 #'
 #' @export
 request_groups <- function(id, regrex, member, signature, limit, offset) {
@@ -91,7 +91,8 @@ request_groups <- function(id, regrex, member, signature, limit, offset) {
 #' }
 #'
 #' @examples
-#' request_notes(id = 'mahshaaban@gnu.ac.kr')
+#' # notes on this submission https://openreview.net/forum?id=B1gabhRcYX
+#' request_notes(id = 'B1gabhRcYX')
 #'
 #' @export
 request_notes <- function(id, invitation, forum, number, trash,
@@ -116,9 +117,6 @@ request_notes <- function(id, invitation, forum, number, trash,
 #'     \item{response}{A list. The return of the GET call}
 #'     \item{content}{A list. The return of the content call}
 #' }
-#'
-#' @examples
-#' request_invitations(id = 'mahshaaban@gnu.ac.kr')
 #'
 #' @export
 request_invitations <- function(id, regrex, replyForum, replyInvitation,
@@ -164,7 +162,7 @@ request_tags <- function(id, invitation, forum, replyto, deleted, limit,
     as.list(args)[-1]
 }
 
-#' @importFrom httr POST accept_json content_type_json content
+#' @importFrom httr POST accept_json content_type_json content http_error has_content status_code
 .post_request <- function(type, params) {
     # make url
     url <- .make_url(type)
@@ -175,8 +173,23 @@ request_tags <- function(id, invitation, forum, replyto, deleted, limit,
                 accept_json(),
                 content_type_json())
 
+    # if error, return status code and error message
+    if(http_error(res)) {
+        stop(sprintf("API request failed with code %s and the following error/s
+                     were returnd: %s",
+                     status_code(res),
+                     paste(unlist(content(res, 'parsed'), use.names = FALSE),
+                           collapse = '. ')),
+             call. = FALSE)
+    }
+
     # parse content
-    cont <- content(res)
+    if(has_content(res)) {
+        cont <- content(res)
+    } else {
+        # or stop
+        stop("Return has no content.")
+    }
 
     # return an object with url, response and cont
     structure(
@@ -187,7 +200,7 @@ request_tags <- function(id, invitation, forum, replyto, deleted, limit,
     )
 }
 
-#' @importFrom httr GET content modify_url
+#' @importFrom httr GET content modify_url http_error has_content status_code
 .get_request <- function(type, params) {
     # make and modify url by adding query
     url <- .make_url(type)
@@ -196,8 +209,23 @@ request_tags <- function(id, invitation, forum, replyto, deleted, limit,
     # make request
     res <- GET(url)
 
+    # if error, return status code and error message
+    if(http_error(res)) {
+        stop(sprintf("API request failed with code %s and the following error/s
+                     were returnd: %s",
+                     status_code(res),
+                     paste(unlist(content(res, 'parsed'), use.names = FALSE),
+                           collapse = '. ')),
+             call. = FALSE)
+    }
+
     # parse content
-    cont <- content(res)
+    if(has_content(res)) {
+        cont <- content(res)
+    } else {
+        # or stop
+        stop("Return has no content.")
+    }
 
     # return an object with url, response and cont
     structure(
