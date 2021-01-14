@@ -11,41 +11,13 @@
 #' }
 #'
 #' @importFrom jsonlite toJSON
-#' @importFrom httr POST accept_json content_type_json content
 #'
 #' @export
 request_users <- function(id, password) {
-    # define server and type of request
-    server <- "https://api.openreview.net"
-    type <- "login"
-
-    url <- paste(server, type, sep = '/')
-
-    # parse parameters
-    ## TODO: find a better way to parse only args
-    params <- as.list(match.call())[-1]
-
-    # convert list to JSON
-    body <- toJSON(params, auto_unbox = TRUE)
-
-    # make request
-    res <- POST(url = url,
-                body = body,
-                accept_json(),
-                content_type_json())
-
-    # parse content
-    cont <- content(res)
-
-    # TODO: modify the content before returning. For example an S3 object
-
-    # return an object with url, response and cont
-    structure(
-        list(url = url,
-             response = res,
-             content = cont),
-        class = 'openreview'
-    )
+    # parse parameters and convert to JSON
+    params <- .make_params(match.call())
+    params <- toJSON(params, auto_unbox = TRUE)
+    .post_request('login', params)
 }
 
 #' Request a profile
@@ -67,21 +39,158 @@ request_users <- function(id, password) {
 #' @examples
 #' request_profiles(email = 'mahshaaban@gnu.ac.kr')
 #'
-#' @importFrom httr GET content modify_url
-#'
 #' @export
 request_profiles <- function(id, email, first, middle, last, group) {
-    # define server and type of request
-    server <- "https://api.openreview.net"
-    type <- "profiles"
+    params <- .make_params(match.call())
+    .get_request(type = 'profiles', params)
+}
 
-    url <- paste(server, type, sep = '/')
+#' Request groups
+#'
+#' @inheritParams request_users
+#' @param regrex A string
+#' @param member A string
+#' @param signature A string
+#' @param limit An integer
+#' @param offset An integer
+#'
+#' @return An S3 object of class openreview.
+#' \describe{
+#'     \item{url}{A string of the url part of the request}
+#'     \item{response}{A list. The return of the GET call}
+#'     \item{content}{A list. The return of the content call}
+#' }
+#'
+#' @examples
+#' request_groups(id = 'mahshaaban@gnu.ac.kr')
+#'
+#' @export
+request_groups <- function(id, regrex, member, signature, limit, offset) {
+    params <- .make_params(match.call())
+    .get_request(type = 'groups', params)
+}
 
-    # parse parameters
-    ## TODO: find a better way to parse only args
-    params <- as.list(match.call())[-1]
+#' Request notes
+#'
+#' @inheritParams request_users
+#' @inheritParams request_groups
+#' @param invitation A string
+#' @param forum A string
+#' @param number A string
+#' @param trash A logical
+#' @param content.authorids A string
+#' @param content.pdf A string
+#' @param content.paperhash A string
+#' @param details A string
+#'
+#' @return An S3 object of class openreview.
+#' \describe{
+#'     \item{url}{A string of the url part of the request}
+#'     \item{response}{A list. The return of the GET call}
+#'     \item{content}{A list. The return of the content call}
+#' }
+#'
+#' @examples
+#' request_notes(id = 'mahshaaban@gnu.ac.kr')
+#'
+#' @export
+request_notes <- function(id, invitation, forum, number, trash,
+                         content.authorids, content.pdf, content.paperhash,
+                         details, limit, offset) {
+    params <- .make_params(match.call())
+    .get_request(type = 'notes', params)
+}
 
-    # modify url by adding query
+#' Request invitations
+#'
+#' @inheritParams request_users
+#' @inheritParams request_groups
+#' @param replyForum A string
+#' @param replyInvitation A string
+#' @param minduedate A string
+#' @param tags A logical
+#'
+#' @return An S3 object of class openreview.
+#' \describe{
+#'     \item{url}{A string of the url part of the request}
+#'     \item{response}{A list. The return of the GET call}
+#'     \item{content}{A list. The return of the content call}
+#' }
+#'
+#' @examples
+#' request_invitations(id = 'mahshaaban@gnu.ac.kr')
+#'
+#' @export
+request_invitations <- function(id, regrex, replyForum, replyInvitation,
+                                minduedate, tags, limit, offset) {
+    params <- .make_params(match.call())
+    .get_request(type = 'invitations', params)
+}
+
+#' Request tags
+#'
+#' @inheritParams request_users
+#' @inheritParams request_groups
+#' @inheritParams request_notes
+#' @param invitation A string
+#' @param replyto A string
+#' @param deleted A logical
+#'
+#' @return An S3 object of class openreview.
+#' \describe{
+#'     \item{url}{A string of the url part of the request}
+#'     \item{response}{A list. The return of the GET call}
+#'     \item{content}{A list. The return of the content call}
+#' }
+#'
+#' @examples
+#' request_tags(id = 'mahshaaban@gnu.ac.kr')
+#'
+#' @export
+request_tags <- function(id, invitation, forum, replyto, deleted, limit,
+                         offset) {
+    params <- .make_params(match.call())
+    .get_request(type = 'tags', params)
+}
+
+.make_url <- function(type, server = "https://api.openreview.net") {
+    if (missing(type)) stop("type must be provided.")
+    paste(server, type, sep = '/')
+}
+
+.make_params <- function(args) {
+    ## TODO: find a better way to parse only arguments
+    ## TODO: handle different types of arguments
+    as.list(args)[-1]
+}
+
+#' @importFrom httr POST accept_json content_type_json content
+.post_request <- function(type, params) {
+    # make url
+    url <- .make_url(type)
+
+    # make request
+    res <- POST(url = url,
+                body = params,
+                accept_json(),
+                content_type_json())
+
+    # parse content
+    cont <- content(res)
+
+    # return an object with url, response and cont
+    structure(
+        list(url = url,
+             response = res,
+             content = cont),
+        class = 'openreview'
+    )
+}
+
+#' @importFrom httr GET content modify_url
+.get_request <- function(type, params) {
+    # make and modify url by adding query
+    url <- .make_url(type)
     url <- modify_url(url, query = params)
 
     # make request
@@ -90,9 +199,7 @@ request_profiles <- function(id, email, first, middle, last, group) {
     # parse content
     cont <- content(res)
 
-    # TODO: modify the content before returning. For example an S3 object
-
-    # return an object with url, parameters, response and cont
+    # return an object with url, response and cont
     structure(
         list(url = url,
              response = res,
